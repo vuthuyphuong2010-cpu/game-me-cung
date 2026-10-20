@@ -1,0 +1,3553 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mê Cung Thử Thách</title>
+
+    <style>
+        /* =========================================================
+           PHẦN 1 - GIAO DIỆN
+           ========================================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            background:
+                radial-gradient(circle at top, #263238, #101419 70%);
+
+            color: white;
+
+            overflow-x: hidden;
+        }
+
+        #gameContainer {
+            width: min(1100px, 96vw);
+            text-align: center;
+        }
+
+        h1 {
+            margin: 10px 0 4px;
+
+            font-size: clamp(28px, 5vw, 48px);
+
+            text-shadow:
+                0 0 10px rgba(255,255,255,.3),
+                0 0 25px rgba(0,255,150,.2);
+        }
+
+        #subtitle {
+            color: #b0bec5;
+            margin-bottom: 15px;
+        }
+
+        /* Thanh thông tin */
+
+        #hud {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+
+            margin-bottom: 10px;
+        }
+
+        .hudBox {
+            padding: 10px 6px;
+
+            background: rgba(255,255,255,.08);
+
+            border: 1px solid rgba(255,255,255,.12);
+
+            border-radius: 10px;
+
+            font-weight: bold;
+        }
+
+        .hudValue {
+            display: block;
+
+            margin-top: 4px;
+
+            font-size: 20px;
+
+            color: #ffd54f;
+        }
+
+        /* Canvas */
+
+        #canvasWrapper {
+            position: relative;
+
+            width: 100%;
+
+            display: flex;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+
+            width: min(900px, 100%);
+            height: auto;
+
+            border-radius: 14px;
+
+            border: 3px solid rgba(255,255,255,.15);
+
+            box-shadow:
+                0 0 30px rgba(0,0,0,.5),
+                0 0 50px rgba(0,255,150,.08);
+
+            touch-action: none;
+        }
+
+        /* Nút */
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+
+            margin-top: 12px;
+
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+
+            padding: 12px 22px;
+
+            border-radius: 10px;
+
+            background: #263238;
+            color: white;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: .2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+
+            background: #37474f;
+        }
+
+        #startButton {
+            background: #00a86b;
+        }
+
+        #startButton:hover {
+            background: #00c77d;
+        }
+
+        /* =========================================================
+           BỘ ĐIỀU KHIỂN ĐIỆN THOẠI
+           ========================================================= */
+
+        #mobileControls {
+            display: grid;
+
+            grid-template-columns: 60px 60px 60px;
+
+            grid-template-rows: 60px 60px;
+
+            justify-content: center;
+
+            gap: 5px;
+
+            margin-top: 15px;
+        }
+
+        .directionButton {
+            width: 60px;
+            height: 60px;
+
+            padding: 0;
+
+            border-radius: 12px;
+
+            background: rgba(255,255,255,.1);
+
+            font-size: 25px;
+        }
+
+        .directionButton:nth-child(1) {
+            grid-column: 2;
+        }
+
+        .directionButton:nth-child(2) {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .directionButton:nth-child(3) {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .directionButton:nth-child(4) {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        /* =========================================================
+           MÀN HÌNH OVERLAY
+           ========================================================= */
+
+        #overlay {
+            position: fixed;
+
+            inset: 0;
+
+            display: none;
+
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+
+            background: rgba(0,0,0,.82);
+
+            z-index: 100;
+        }
+
+        #overlay.show {
+            display: flex;
+        }
+
+        #overlayBox {
+            width: min(800px, 95vw);
+
+            padding: 40px 25px;
+
+            border-radius: 25px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(30,30,40,.98),
+                    rgba(10,20,25,.98)
+                );
+
+            border: 2px solid rgba(255,255,255,.15);
+
+            box-shadow:
+                0 0 60px rgba(0,0,0,.8);
+
+            animation: popup .4s ease;
+        }
+
+        @keyframes popup {
+            from {
+                transform: scale(.7);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #overlayTitle {
+            font-size: clamp(30px, 6vw, 65px);
+
+            margin: 0 0 20px;
+
+            color: #ffd54f;
+
+            text-shadow:
+                0 0 10px #ffd54f,
+                0 0 30px rgba(255,213,79,.5);
+        }
+
+        #overlayText {
+            font-size: 20px;
+
+            line-height: 1.6;
+
+            color: #e0e0e0;
+        }
+
+        /* Chú thích */
+
+        #instructions {
+            margin-top: 12px;
+
+            color: #90a4ae;
+
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+
+            #hud {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .hudBox {
+                font-size: 12px;
+            }
+
+            .hudValue {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="gameContainer">
+
+    <h1>🧩 MÊ CUNG THỬ THÁCH</h1>
+
+    <div id="subtitle">
+        Thu thập điểm • Nhặt giày tăng tốc • Tìm đường đến đích
+    </div>
+
+    <!-- =========================================================
+         PHẦN 2 - HUD
+         ========================================================= -->
+
+    <div id="hud">
+
+        <div class="hudBox">
+            LEVEL
+            <span id="levelDisplay" class="hudValue">1</span>
+        </div>
+
+        <div class="hudBox">
+            ĐIỂM
+            <span id="scoreDisplay" class="hudValue">0</span>
+        </div>
+
+        <div class="hudBox">
+            THỜI GIAN
+            <span id="timeDisplay" class="hudValue">60</span>
+        </div>
+
+        <div class="hudBox">
+            CAO NHẤT
+            <span id="highScoreDisplay" class="hudValue">0</span>
+        </div>
+
+        <div class="hudBox">
+            TRẠNG THÁI
+            <span id="statusDisplay" class="hudValue">SẴN SÀNG</span>
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+         PHẦN 3 - CANVAS
+         ========================================================= -->
+
+    <div id="canvasWrapper">
+
+        <canvas
+            id="gameCanvas"
+            width="900"
+            height="650">
+        </canvas>
+
+    </div>
+
+    <!-- =========================================================
+         PHẦN 4 - NÚT CHỨC NĂNG
+         ========================================================= -->
+
+    <div id="controls">
+
+        <button id="startButton">
+            ▶ BẮT ĐẦU
+        </button>
+
+        <button id="pauseButton">
+            ⏸ TẠM DỪNG
+        </button>
+
+        <button id="restartButton">
+            🔄 CHƠI LẠI
+        </button>
+
+    </div>
+
+    <!-- =========================================================
+         PHẦN 5 - NÚT DI CHUYỂN MOBILE
+         ========================================================= -->
+
+    <div id="mobileControls">
+
+        <button class="directionButton" data-key="ArrowUp">
+            ▲
+        </button>
+
+        <button class="directionButton" data-key="ArrowLeft">
+            ◀
+        </button>
+
+        <button class="directionButton" data-key="ArrowDown">
+            ▼
+        </button>
+
+        <button class="directionButton" data-key="ArrowRight">
+            ▶
+        </button>
+
+    </div>
+
+    <div id="instructions">
+        Máy tính: dùng phím ↑ ↓ ← → hoặc WASD
+        <br>
+        Điện thoại: dùng các nút điều hướng
+    </div>
+
+</div>
+
+<!-- =============================================================
+     PHẦN 6 - MÀN HÌNH THÔNG BÁO
+     ============================================================= -->
+
+<div id="overlay">
+
+    <div id="overlayBox">
+
+        <h2 id="overlayTitle">
+            CHÚC MỪNG!
+        </h2>
+
+        <div id="overlayText"></div>
+
+        <br>
+
+        <button id="overlayButton">
+            TIẾP TỤC
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =============================================================
+     PHẦN 7 - YOUTUBE PLAYER ẨN
+     ============================================================= -->
+
+<iframe
+    id="youtubePlayer"
+    width="1"
+    height="1"
+    style="position:absolute; left:-9999px;"
+    src="https://www.youtube.com/embed/__CRWE-L45k?enablejsapi=1&loop=1&playlist=__CRWE-L45k"
+    title="Background Music"
+    allow="autoplay">
+</iframe>
+
+
+<script>
+
+/* ===============================================================
+   PHẦN 8 - LẤY CÁC PHẦN TỬ HTML
+   =============================================================== */
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const levelDisplay = document.getElementById("levelDisplay");
+const scoreDisplay = document.getElementById("scoreDisplay");
+const timeDisplay = document.getElementById("timeDisplay");
+const highScoreDisplay = document.getElementById("highScoreDisplay");
+const statusDisplay = document.getElementById("statusDisplay");
+
+const startButton = document.getElementById("startButton");
+const pauseButton = document.getElementById("pauseButton");
+const restartButton = document.getElementById("restartButton");
+
+const overlay = document.getElementById("overlay");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayText = document.getElementById("overlayText");
+const overlayButton = document.getElementById("overlayButton");
+
+const youtubePlayer = document.getElementById("youtubePlayer");
+
+
+/* ===============================================================
+   PHẦN 9 - CẤU HÌNH GAME
+   =============================================================== */
+
+const CONFIG = {
+
+    // Kích thước ô cơ bản
+    baseCellSize: 25,
+
+    // Kích thước canvas
+    canvasWidth: 900,
+    canvasHeight: 650,
+
+    // Tốc độ nhân vật
+    playerSpeed: 3.2,
+
+    // Tốc độ khi nhặt giày
+    boostSpeed: 5.8,
+
+    // Thời gian tối thiểu
+    minimumTime: 15,
+
+    // Điểm mỗi đồng vàng
+    coinScore: 10,
+
+    // Điểm hoàn thành level
+    levelBonus: 100
+
+};
+
+
+/* ===============================================================
+   PHẦN 10 - MÀU SẮC CÁC LEVEL
+   =============================================================== */
+
+const THEMES = [
+
+    {
+        background: "#071a12",
+        wall: "#00a86b",
+        wallGlow: "#00ff99",
+        floor: "#0b2a20",
+        exit: "#ffd54f"
+    },
+
+    {
+        background: "#10152c",
+        wall: "#536dfe",
+        wallGlow: "#8c9eff",
+        floor: "#151c3a",
+        exit: "#ffca28"
+    },
+
+    {
+        background: "#29120d",
+        wall: "#ff7043",
+        wallGlow: "#ffab91",
+        floor: "#3b1810",
+        exit: "#ffee58"
+    },
+
+    {
+        background: "#200d2b",
+        wall: "#ab47bc",
+        wallGlow: "#ea80fc",
+        floor: "#32133d",
+        exit: "#fff176"
+    },
+
+    {
+        background: "#102c35",
+        wall: "#26c6da",
+        wallGlow: "#84ffff",
+        floor: "#123d48",
+        exit: "#ffeb3b"
+    },
+
+    {
+        background: "#281f0c",
+        wall: "#ffc107",
+        wallGlow: "#fff176",
+        floor: "#392d0d",
+        exit: "#ffffff"
+    }
+
+];
+
+
+/* ===============================================================
+   PHẦN 11 - TRẠNG THÁI GAME
+   =============================================================== */
+
+let game = {
+
+    running: false,
+
+    paused: false,
+
+    won: false,
+
+    gameOver: false,
+
+    level: 1,
+
+    score: 0,
+
+    highScore:
+        Number(localStorage.getItem("mazeHighScore") || 0),
+
+    timeLeft: 60,
+
+    lastTime: 0,
+
+    timerAccumulator: 0,
+
+    maze: null,
+
+    mazeRows: 0,
+
+    mazeCols: 0,
+
+    cellSize: 25,
+
+    offsetX: 0,
+
+    offsetY: 0,
+
+    player: null,
+
+    coins: [],
+
+    powerUp: null,
+
+    enemies: [],
+
+    theme: THEMES[0]
+
+};
+
+
+/* ===============================================================
+   PHẦN 12 - ÂM THANH WEB AUDIO
+   =============================================================== */
+
+let audioContext = null;
+
+
+/*
+    Khởi tạo AudioContext.
+*/
+function initAudio() {
+
+    if (!audioContext) {
+
+        audioContext =
+            new (window.AudioContext ||
+                 window.webkitAudioContext)();
+
+    }
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume();
+    }
+
+}
+
+
+/*
+    Tạo một âm thanh đơn giản bằng Web Audio API.
+
+    frequency:
+        Tần số âm thanh.
+
+    duration:
+        Thời lượng.
+
+    type:
+        Loại sóng.
+
+    volume:
+        Âm lượng.
+*/
+function playTone(
+    frequency,
+    duration,
+    type = "sine",
+    volume = 0.08
+) {
+
+    initAudio();
+
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
+
+    oscillator.type = type;
+
+    oscillator.frequency.value = frequency;
+
+    gain.gain.setValueAtTime(
+        volume,
+        audioContext.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + duration
+    );
+
+    oscillator.connect(gain);
+
+    gain.connect(audioContext.destination);
+
+    oscillator.start();
+
+    oscillator.stop(
+        audioContext.currentTime + duration
+    );
+}
+
+
+/*
+    Âm thanh khi ăn vàng.
+*/
+function playCoinSound() {
+
+    playTone(800, .08, "square", .06);
+
+}
+
+
+/*
+    Âm thanh khi nhặt giày.
+*/
+function playPowerUpSound() {
+
+    playTone(450, .1, "sine", .08);
+
+    setTimeout(() => {
+        playTone(750, .15, "sine", .08);
+    }, 100);
+
+}
+
+
+/*
+    Âm thanh chiến thắng.
+*/
+function playWinSound() {
+
+    initAudio();
+
+    const notes = [
+        523,
+        659,
+        784,
+        1046
+    ];
+
+    notes.forEach((note, index) => {
+
+        setTimeout(() => {
+
+            playTone(
+                note,
+                .3,
+                "triangle",
+                .12
+            );
+
+        }, index * 180);
+
+    });
+
+}
+
+
+/* ===============================================================
+   PHẦN 13 - ĐIỀU KHIỂN YOUTUBE
+   =============================================================== */
+
+/*
+    Gửi lệnh đến YouTube iframe.
+*/
+function youtubeCommand(command) {
+
+    youtubePlayer.contentWindow.postMessage(
+        JSON.stringify({
+            event: "command",
+            func: command,
+            args: []
+        }),
+        "*"
+    );
+
+}
+
+
+/*
+    Bắt đầu nhạc.
+*/
+function startMusic() {
+
+    youtubeCommand("playVideo");
+
+}
+
+
+/*
+    Tắt nhạc.
+*/
+function stopMusic() {
+
+    youtubeCommand("pauseVideo");
+
+}
+
+
+/* ===============================================================
+   PHẦN 14 - TÍNH ĐỘ KHÓ
+   =============================================================== */
+
+
+/*
+    Tính số hàng/cột mê cung theo level.
+
+    Level càng cao:
+        - mê cung càng lớn
+        - nhiều chướng ngại vật hơn
+        - thời gian ít hơn
+*/
+function calculateMazeSize(level) {
+
+    let cols =
+        15 + Math.floor(level * 1.5);
+
+    let rows =
+        9 + Math.floor(level * 1.0);
+
+    // Đảm bảo là số lẻ.
+    if (cols % 2 === 0) cols++;
+
+    if (rows % 2 === 0) rows++;
+
+    return {
+        cols,
+        rows
+    };
+
+}
+
+
+/*
+    Tính thời gian của level.
+*/
+function calculateTime(level) {
+
+    return Math.max(
+        CONFIG.minimumTime,
+        65 - (level - 1) * 3
+    );
+
+}
+
+
+/*
+    Số lượng chướng ngại vật.
+*/
+function calculateEnemyCount(level) {
+
+    if (level < 3) {
+        return 0;
+    }
+
+    return Math.min(
+        2 + Math.floor(level / 2),
+        12
+    );
+
+}
+
+
+/* ===============================================================
+   PHẦN 15 - TẠO MÊ CUNG
+   =============================================================== */
+
+
+/*
+    Thuật toán Recursive Backtracking.
+
+    Mỗi ô có 4 bức tường:
+
+        0 = trên
+        1 = phải
+        2 = dưới
+        3 = trái
+
+    true = còn tường
+    false = đã phá tường
+*/
+function generateMaze(rows, cols) {
+
+    const maze = [];
+
+    for (let r = 0; r < rows; r++) {
+
+        maze[r] = [];
+
+        for (let c = 0; c < cols; c++) {
+
+            maze[r][c] = {
+                walls: [true, true, true, true],
+                visited: false
+            };
+
+        }
+
+    }
+
+    /*
+        Hàm lấy các ô hàng xóm chưa thăm.
+    */
+    function getNeighbors(row, col) {
+
+        const neighbors = [];
+
+        const directions = [
+
+            {
+                r: -1,
+                c: 0,
+                wall: 0,
+                opposite: 2
+            },
+
+            {
+                r: 0,
+                c: 1,
+                wall: 1,
+                opposite: 3
+            },
+
+            {
+                r: 1,
+                c: 0,
+                wall: 2,
+                opposite: 0
+            },
+
+            {
+                r: 0,
+                c: -1,
+                wall: 3,
+                opposite: 1
+            }
+
+        ];
+
+        for (const d of directions) {
+
+            const nr = row + d.r;
+            const nc = col + d.c;
+
+            if (
+                nr >= 0 &&
+                nr < rows &&
+                nc >= 0 &&
+                nc < cols &&
+                !maze[nr][nc].visited
+            ) {
+
+                neighbors.push({
+                    row: nr,
+                    col: nc,
+                    wall: d.wall,
+                    opposite: d.opposite
+                });
+
+            }
+
+        }
+
+        return neighbors;
+
+    }
+
+
+    /*
+        Bắt đầu từ góc trên trái.
+    */
+
+    const stack = [];
+
+    maze[0][0].visited = true;
+
+    stack.push({
+        row: 0,
+        col: 0
+    });
+
+
+    while (stack.length > 0) {
+
+        const current =
+            stack[stack.length - 1];
+
+        const neighbors =
+            getNeighbors(
+                current.row,
+                current.col
+            );
+
+        if (neighbors.length === 0) {
+
+            stack.pop();
+
+            continue;
+
+        }
+
+
+        /*
+            Chọn ngẫu nhiên một ô hàng xóm.
+        */
+
+        const next =
+            neighbors[
+                Math.floor(
+                    Math.random() *
+                    neighbors.length
+                )
+            ];
+
+
+        /*
+            Phá tường giữa hai ô.
+        */
+
+        maze[current.row][current.col]
+            .walls[next.wall] = false;
+
+        maze[next.row][next.col]
+            .walls[next.opposite] = false;
+
+
+        maze[next.row][next.col]
+            .visited = true;
+
+
+        stack.push({
+            row: next.row,
+            col: next.col
+        });
+
+    }
+
+
+    /*
+        Xóa thuộc tính visited.
+    */
+
+    for (let r = 0; r < rows; r++) {
+
+        for (let c = 0; c < cols; c++) {
+
+            delete maze[r][c].visited;
+
+        }
+
+    }
+
+    return maze;
+
+}
+
+
+/* ===============================================================
+   PHẦN 16 - TẠO COIN
+   =============================================================== */
+
+function createCoins() {
+
+    const coins = [];
+
+    /*
+        Số vàng tăng dần theo level.
+    */
+
+    const amount =
+        Math.min(
+            5 + game.level * 2,
+            30
+        );
+
+
+    while (coins.length < amount) {
+
+        const cell = getRandomFreeCell();
+
+        if (!cell) break;
+
+
+        /*
+            Không đặt coin ở vị trí bắt đầu.
+        */
+
+        if (
+            cell.row === 0 &&
+            cell.col === 0
+        ) {
+            continue;
+        }
+
+
+        /*
+            Không trùng coin.
+        */
+
+        const duplicate =
+            coins.some(
+                coin =>
+                    coin.row === cell.row &&
+                    coin.col === cell.col
+            );
+
+        if (duplicate) {
+            continue;
+        }
+
+
+        coins.push({
+
+            row: cell.row,
+
+            col: cell.col,
+
+            collected: false
+
+        });
+
+    }
+
+    return coins;
+
+}
+
+
+/* ===============================================================
+   PHẦN 17 - TẠO VẬT PHẨM TĂNG TỐC
+   =============================================================== */
+
+function createPowerUp() {
+
+    let cell;
+
+    do {
+
+        cell = getRandomFreeCell();
+
+    } while (
+        cell.row === 0 &&
+        cell.col === 0
+    );
+
+
+    return {
+
+        row: cell.row,
+
+        col: cell.col,
+
+        active: true
+
+    };
+
+}
+
+
+/* ===============================================================
+   PHẦN 18 - TẠO CHƯỚNG NGẠI VẬT DI ĐỘNG
+   =============================================================== */
+
+function createEnemies() {
+
+    const enemies = [];
+
+    const count =
+        calculateEnemyCount(game.level);
+
+
+    for (let i = 0; i < count; i++) {
+
+        let cell;
+
+        let safe = false;
+
+
+        /*
+            Đảm bảo enemy không xuất hiện ngay cạnh
+            vị trí bắt đầu.
+        */
+
+        while (!safe) {
+
+            cell = getRandomFreeCell();
+
+            const distance =
+                Math.abs(cell.row) +
+                Math.abs(cell.col);
+
+            safe = distance > 5;
+
+        }
+
+
+        const directions = [
+
+            {
+                dr: 1,
+                dc: 0
+            },
+
+            {
+                dr: -1,
+                dc: 0
+            },
+
+            {
+                dr: 0,
+                dc: 1
+            },
+
+            {
+                dr: 0,
+                dc: -1
+            }
+
+        ];
+
+
+        const direction =
+            directions[
+                Math.floor(
+                    Math.random() *
+                    directions.length
+                )
+            ];
+
+
+        enemies.push({
+
+            row: cell.row,
+
+            col: cell.col,
+
+            x: cell.col + .5,
+
+            y: cell.row + .5,
+
+            dx: direction.dc,
+
+            dy: direction.dr,
+
+            speed:
+                .8 +
+                Math.min(
+                    game.level * .04,
+                    .8
+                )
+
+        });
+
+    }
+
+    return enemies;
+
+}
+
+
+/* ===============================================================
+   PHẦN 19 - LẤY Ô TRỐNG NGẪU NHIÊN
+   =============================================================== */
+
+function getRandomFreeCell() {
+
+    for (let attempt = 0; attempt < 100; attempt++) {
+
+        const row =
+            Math.floor(
+                Math.random() *
+                game.mazeRows
+            );
+
+        const col =
+            Math.floor(
+                Math.random() *
+                game.mazeCols
+            );
+
+
+        if (
+            row === 0 &&
+            col === 0
+        ) {
+            continue;
+        }
+
+
+        return {
+            row,
+            col
+        };
+
+    }
+
+    return {
+        row: 1,
+        col: 1
+    };
+
+}
+
+
+/* ===============================================================
+   PHẦN 20 - KHỞI TẠO LEVEL
+   =============================================================== */
+
+function initializeLevel() {
+
+    /*
+        Tính kích thước.
+    */
+
+    const size =
+        calculateMazeSize(game.level);
+
+    game.mazeRows = size.rows;
+    game.mazeCols = size.cols;
+
+
+    /*
+        Tạo mê cung.
+    */
+
+    game.maze =
+        generateMaze(
+            game.mazeRows,
+            game.mazeCols
+        );
+
+
+    /*
+        Chọn màu.
+    */
+
+    game.theme =
+        THEMES[
+            (game.level - 1) %
+            THEMES.length
+        ];
+
+
+    /*
+        Tính kích thước ô để vừa canvas.
+    */
+
+    const maxCellWidth =
+        CONFIG.canvasWidth /
+        game.mazeCols;
+
+    const maxCellHeight =
+        CONFIG.canvasHeight /
+        game.mazeRows;
+
+
+    game.cellSize =
+        Math.min(
+            CONFIG.baseCellSize,
+            maxCellWidth,
+            maxCellHeight
+        );
+
+
+    /*
+        Căn mê cung vào giữa canvas.
+    */
+
+    const mazeWidth =
+        game.mazeCols *
+        game.cellSize;
+
+    const mazeHeight =
+        game.mazeRows *
+        game.cellSize;
+
+
+    game.offsetX =
+        (canvas.width - mazeWidth) / 2;
+
+    game.offsetY =
+        (canvas.height - mazeHeight) / 2;
+
+
+    /*
+        Tạo nhân vật.
+    */
+
+    game.player = {
+
+        x: .5,
+
+        y: .5,
+
+        radius: .27,
+
+        baseSpeed:
+            CONFIG.playerSpeed,
+
+        speed:
+            CONFIG.playerSpeed,
+
+        boosted: false
+
+    };
+
+
+    /*
+        Tạo vật phẩm.
+    */
+
+    game.coins =
+        createCoins();
+
+    game.powerUp =
+        createPowerUp();
+
+    game.enemies =
+        createEnemies();
+
+
+    /*
+        Reset thời gian.
+    */
+
+    game.timeLeft =
+        calculateTime(game.level);
+
+    game.timerAccumulator = 0;
+
+
+    /*
+        Cập nhật giao diện.
+    */
+
+    updateHUD();
+
+}
+
+
+/* ===============================================================
+   PHẦN 21 - KIỂM TRA VA CHẠM TƯỜNG
+   =============================================================== */
+
+
+/*
+    Kiểm tra một vị trí của nhân vật có đụng tường không.
+
+    x/y tính theo đơn vị "ô mê cung".
+*/
+function isWallCollision(x, y) {
+
+    const radius =
+        game.player.radius;
+
+
+    const minX = x - radius;
+    const maxX = x + radius;
+
+    const minY = y - radius;
+    const maxY = y + radius;
+
+
+    /*
+        Kiểm tra biên ngoài.
+    */
+
+    if (
+        minX < 0 ||
+        minY < 0 ||
+        maxX > game.mazeCols ||
+        maxY > game.mazeRows
+    ) {
+
+        return true;
+
+    }
+
+
+    /*
+        Danh sách các góc cần kiểm tra.
+    */
+
+    const points = [
+
+        {
+            x: minX,
+            y: minY
+        },
+
+        {
+            x: maxX,
+            y: minY
+        },
+
+        {
+            x: minX,
+            y: maxY
+        },
+
+        {
+            x: maxX,
+            y: maxY
+        }
+
+    ];
+
+
+    for (const point of points) {
+
+        const col =
+            Math.floor(point.x);
+
+        const row =
+            Math.floor(point.y);
+
+
+        if (
+            row < 0 ||
+            row >= game.mazeRows ||
+            col < 0 ||
+            col >= game.mazeCols
+        ) {
+
+            return true;
+
+        }
+
+
+        const cell =
+            game.maze[row][col];
+
+
+        const localX =
+            point.x - col;
+
+        const localY =
+            point.y - row;
+
+
+        /*
+            Tường trên.
+        */
+
+        if (
+            cell.walls[0] &&
+            localY < .06
+        ) {
+            return true;
+        }
+
+
+        /*
+            Tường phải.
+        */
+
+        if (
+            cell.walls[1] &&
+            localX > .94
+        ) {
+            return true;
+        }
+
+
+        /*
+            Tường dưới.
+        */
+
+        if (
+            cell.walls[2] &&
+            localY > .94
+        ) {
+            return true;
+        }
+
+
+        /*
+            Tường trái.
+        */
+
+        if (
+            cell.walls[3] &&
+            localX < .06
+        ) {
+            return true;
+        }
+
+    }
+
+
+    return false;
+
+}
+
+
+/* ===============================================================
+   PHẦN 22 - DI CHUYỂN NHÂN VẬT
+   =============================================================== */
+
+const keys = {};
+
+
+/*
+    Nhận phím bàn phím.
+*/
+
+window.addEventListener(
+    "keydown",
+    event => {
+
+        keys[event.key] = true;
+
+        /*
+            Không cho trình duyệt cuộn trang
+            khi bấm phím mũi tên.
+        */
+
+        if (
+            [
+                "ArrowUp",
+                "ArrowDown",
+                "ArrowLeft",
+                "ArrowRight",
+                " "
+            ].includes(event.key)
+        ) {
+
+            event.preventDefault();
+
+        }
+
+
+        /*
+            P = Pause
+        */
+
+        if (
+            event.key.toLowerCase() === "p"
+        ) {
+
+            togglePause();
+
+        }
+
+    }
+);
+
+
+/*
+    Nhả phím.
+*/
+
+window.addEventListener(
+    "keyup",
+    event => {
+
+        keys[event.key] = false;
+
+    }
+);
+
+
+/*
+    Kiểm tra một hướng có được nhấn hay không.
+*/
+
+function isKeyDown(...keyNames) {
+
+    return keyNames.some(
+        key => keys[key]
+    );
+
+}
+
+
+/*
+    Cập nhật vị trí nhân vật.
+*/
+function updatePlayer(deltaTime) {
+
+    if (
+        !game.running ||
+        game.paused ||
+        game.won ||
+        game.gameOver
+    ) {
+        return;
+    }
+
+
+    let dx = 0;
+    let dy = 0;
+
+
+    if (
+        isKeyDown(
+            "ArrowLeft",
+            "a",
+            "A"
+        )
+    ) {
+        dx -= 1;
+    }
+
+
+    if (
+        isKeyDown(
+            "ArrowRight",
+            "d",
+            "D"
+        )
+    ) {
+        dx += 1;
+    }
+
+
+    if (
+        isKeyDown(
+            "ArrowUp",
+            "w",
+            "W"
+        )
+    ) {
+        dy -= 1;
+    }
+
+
+    if (
+        isKeyDown(
+            "ArrowDown",
+            "s",
+            "S"
+        )
+    ) {
+        dy += 1;
+    }
+
+
+    /*
+        Chuẩn hóa chuyển động chéo.
+    */
+
+    if (dx !== 0 && dy !== 0) {
+
+        const length =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+        dx /= length;
+        dy /= length;
+
+    }
+
+
+    const speed =
+        game.player.speed *
+        deltaTime;
+
+
+    const newX =
+        game.player.x +
+        dx * speed;
+
+    const newY =
+        game.player.y +
+        dy * speed;
+
+
+    /*
+        Xử lý X riêng.
+    */
+
+    if (
+        !isWallCollision(
+            newX,
+            game.player.y
+        )
+    ) {
+
+        game.player.x = newX;
+
+    }
+
+
+    /*
+        Xử lý Y riêng.
+    */
+
+    if (
+        !isWallCollision(
+            game.player.x,
+            newY
+        )
+    ) {
+
+        game.player.y = newY;
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 23 - KIỂM TRA ĂN VÀNG
+   =============================================================== */
+
+function checkCoins() {
+
+    for (const coin of game.coins) {
+
+        if (coin.collected) {
+            continue;
+        }
+
+
+        const distance =
+            Math.hypot(
+                game.player.x -
+                (coin.col + .5),
+
+                game.player.y -
+                (coin.row + .5)
+            );
+
+
+        if (distance < .45) {
+
+            coin.collected = true;
+
+            game.score +=
+                CONFIG.coinScore;
+
+            playCoinSound();
+
+            updateHUD();
+
+        }
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 24 - KIỂM TRA VẬT PHẨM
+   =============================================================== */
+
+function checkPowerUp() {
+
+    if (
+        !game.powerUp ||
+        !game.powerUp.active
+    ) {
+        return;
+    }
+
+
+    const distance =
+        Math.hypot(
+
+            game.player.x -
+            (game.powerUp.col + .5),
+
+            game.player.y -
+            (game.powerUp.row + .5)
+
+        );
+
+
+    if (distance < .5) {
+
+        game.powerUp.active = false;
+
+
+        /*
+            Kích hoạt tăng tốc.
+        */
+
+        game.player.boosted = true;
+
+        game.player.speed =
+            CONFIG.boostSpeed;
+
+
+        playPowerUpSound();
+
+        updateHUD();
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 25 - DI CHUYỂN CHƯỚNG NGẠI VẬT
+   =============================================================== */
+
+function updateEnemies(deltaTime) {
+
+    if (
+        game.enemies.length === 0 ||
+        game.paused
+    ) {
+        return;
+    }
+
+
+    for (const enemy of game.enemies) {
+
+        /*
+            Vị trí mới.
+        */
+
+        const newX =
+            enemy.x +
+            enemy.dx *
+            enemy.speed *
+            deltaTime;
+
+        const newY =
+            enemy.y +
+            enemy.dy *
+            enemy.speed *
+            deltaTime;
+
+
+        /*
+            Nếu đụng tường,
+            đổi hướng.
+        */
+
+        if (
+            isEnemyWallCollision(
+                newX,
+                enemy.y
+            )
+        ) {
+
+            changeEnemyDirection(enemy);
+
+        } else {
+
+            enemy.x = newX;
+
+        }
+
+
+        if (
+            isEnemyWallCollision(
+                enemy.x,
+                newY
+            )
+        ) {
+
+            changeEnemyDirection(enemy);
+
+        } else {
+
+            enemy.y = newY;
+
+        }
+
+
+        /*
+            Cập nhật row/col.
+        */
+
+        enemy.row =
+            Math.floor(enemy.y);
+
+        enemy.col =
+            Math.floor(enemy.x);
+
+
+        /*
+            Kiểm tra va chạm với người chơi.
+        */
+
+        const distance =
+            Math.hypot(
+                game.player.x - enemy.x,
+                game.player.y - enemy.y
+            );
+
+
+        if (distance < .48) {
+
+            handlePlayerHit();
+
+            return;
+
+        }
+
+    }
+
+}
+
+
+/*
+    Kiểm tra tường cho enemy.
+*/
+function isEnemyWallCollision(x, y) {
+
+    if (
+        x < .2 ||
+        y < .2 ||
+        x > game.mazeCols - .2 ||
+        y > game.mazeRows - .2
+    ) {
+
+        return true;
+
+    }
+
+
+    const col =
+        Math.floor(x);
+
+    const row =
+        Math.floor(y);
+
+
+    const cell =
+        game.maze[row][col];
+
+
+    const localX =
+        x - col;
+
+    const localY =
+        y - row;
+
+
+    if (
+        cell.walls[0] &&
+        localY < .1
+    ) {
+        return true;
+    }
+
+
+    if (
+        cell.walls[1] &&
+        localX > .9
+    ) {
+        return true;
+    }
+
+
+    if (
+        cell.walls[2] &&
+        localY > .9
+    ) {
+        return true;
+    }
+
+
+    if (
+        cell.walls[3] &&
+        localX < .1
+    ) {
+        return true;
+    }
+
+
+    return false;
+
+}
+
+
+/*
+    Đổi hướng enemy.
+*/
+function changeEnemyDirection(enemy) {
+
+    const directions = [
+
+        { dx: 1, dy: 0 },
+
+        { dx: -1, dy: 0 },
+
+        { dx: 0, dy: 1 },
+
+        { dx: 0, dy: -1 }
+
+    ];
+
+
+    /*
+        Ưu tiên không quay ngược lại.
+    */
+
+    const possible =
+        directions.filter(
+            d =>
+                !(
+                    d.dx === -enemy.dx &&
+                    d.dy === -enemy.dy
+                )
+        );
+
+
+    const direction =
+        possible[
+            Math.floor(
+                Math.random() *
+                possible.length
+            )
+        ];
+
+
+    enemy.dx = direction.dx;
+    enemy.dy = direction.dy;
+
+}
+
+
+/*
+    Khi người chơi đụng enemy.
+*/
+function handlePlayerHit() {
+
+    /*
+        Nếu có boost thì vẫn bị mất boost.
+    */
+
+    game.player.boosted = false;
+
+    game.player.speed =
+        game.player.baseSpeed;
+
+
+    /*
+        Đưa người chơi về điểm bắt đầu.
+    */
+
+    game.player.x = .5;
+    game.player.y = .5;
+
+
+    /*
+        Trừ điểm nhưng không xuống dưới 0.
+    */
+
+    game.score =
+        Math.max(
+            0,
+            game.score - 25
+        );
+
+
+    playTone(
+        180,
+        .2,
+        "sawtooth",
+        .1
+    );
+
+    updateHUD();
+
+}
+
+
+/* ===============================================================
+   PHẦN 26 - KIỂM TRA ĐIỂM ĐÍCH
+   =============================================================== */
+
+function checkExit() {
+
+    /*
+        Điểm đích nằm ở góc dưới bên phải.
+    */
+
+    const exitX =
+        game.mazeCols - .5;
+
+    const exitY =
+        game.mazeRows - .5;
+
+
+    const distance =
+        Math.hypot(
+            game.player.x - exitX,
+            game.player.y - exitY
+        );
+
+
+    if (distance < .5) {
+
+        showWinScreen();
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 27 - BỘ ĐẾM THỜI GIAN
+   =============================================================== */
+
+function updateTimer(deltaTime) {
+
+    if (
+        !game.running ||
+        game.paused ||
+        game.won ||
+        game.gameOver
+    ) {
+        return;
+    }
+
+
+    game.timerAccumulator +=
+        deltaTime;
+
+
+    /*
+        Mỗi 1 giây giảm 1.
+    */
+
+    if (
+        game.timerAccumulator >= 1
+    ) {
+
+        game.timerAccumulator -= 1;
+
+        game.timeLeft--;
+
+        updateHUD();
+
+
+        if (
+            game.timeLeft <= 0
+        ) {
+
+            showGameOver();
+
+        }
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 28 - HIỂN THỊ CHIẾN THẮNG
+   =============================================================== */
+
+function showWinScreen() {
+
+    if (game.won) {
+        return;
+    }
+
+
+    game.won = true;
+
+    game.running = false;
+
+
+    /*
+        Dừng nhạc.
+    */
+
+    stopMusic();
+
+
+    /*
+        Phát nhạc chiến thắng.
+    */
+
+    playWinSound();
+
+
+    /*
+        Thưởng điểm.
+
+        Càng còn nhiều thời gian
+        càng được nhiều điểm.
+    */
+
+    game.score +=
+        CONFIG.levelBonus +
+        game.timeLeft * 5;
+
+
+    /*
+        Cập nhật high score.
+    */
+
+    if (
+        game.score >
+        game.highScore
+    ) {
+
+        game.highScore =
+            game.score;
+
+        localStorage.setItem(
+            "mazeHighScore",
+            game.highScore
+        );
+
+    }
+
+
+    updateHUD();
+
+
+    /*
+        Hiển thị thông báo.
+    */
+
+    overlayTitle.innerHTML =
+        "CHÚC MỪNG BẠN ĐÃ VƯỢT QUA THỬ THÁCH!";
+
+
+    overlayText.innerHTML =
+
+        `
+        <p>
+            Bạn đã hoàn thành
+            <strong>Level ${game.level}</strong>!
+        </p>
+
+        <p>
+            Điểm hiện tại:
+            <strong>${game.score}</strong>
+        </p>
+
+        <p>
+            Thời gian còn lại:
+            <strong>${game.timeLeft}s</strong>
+        </p>
+
+        <p>
+            Level tiếp theo sẽ khó hơn.
+        </p>
+        `;
+
+
+    overlayButton.textContent =
+        "LEVEL TIẾP THEO";
+
+
+    overlay.classList.add("show");
+
+
+    /*
+        Tự động chuyển level
+        sau 3 giây.
+    */
+
+    setTimeout(() => {
+
+        if (game.won) {
+
+            nextLevel();
+
+        }
+
+    }, 3000);
+
+}
+
+
+/* ===============================================================
+   PHẦN 29 - LEVEL TIẾP THEO
+   =============================================================== */
+
+function nextLevel() {
+
+    overlay.classList.remove("show");
+
+
+    game.level++;
+
+    game.won = false;
+
+    game.gameOver = false;
+
+    game.running = true;
+
+    game.paused = false;
+
+
+    initializeLevel();
+
+
+    startMusic();
+
+
+    statusDisplay.textContent =
+        "ĐANG CHƠI";
+
+}
+
+
+/* ===============================================================
+   PHẦN 30 - GAME OVER
+   =============================================================== */
+
+function showGameOver() {
+
+    game.gameOver = true;
+
+    game.running = false;
+
+    stopMusic();
+
+
+    overlayTitle.textContent =
+        "⏰ HẾT THỜI GIAN!";
+
+
+    overlayText.innerHTML =
+
+        `
+        <p>
+            Bạn đã hết thời gian.
+        </p>
+
+        <p>
+            Level:
+            <strong>${game.level}</strong>
+        </p>
+
+        <p>
+            Điểm:
+            <strong>${game.score}</strong>
+        </p>
+        `;
+
+
+    overlayButton.textContent =
+        "CHƠI LẠI";
+
+
+    overlay.classList.add("show");
+
+
+    statusDisplay.textContent =
+        "GAME OVER";
+
+}
+
+
+/* ===============================================================
+   PHẦN 31 - PAUSE
+   =============================================================== */
+
+function togglePause() {
+
+    if (
+        !game.running ||
+        game.won ||
+        game.gameOver
+    ) {
+        return;
+    }
+
+
+    game.paused =
+        !game.paused;
+
+
+    if (game.paused) {
+
+        stopMusic();
+
+        statusDisplay.textContent =
+            "TẠM DỪNG";
+
+    } else {
+
+        startMusic();
+
+        statusDisplay.textContent =
+            "ĐANG CHƠI";
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 32 - RESET GAME
+   =============================================================== */
+
+function restartGame() {
+
+    stopMusic();
+
+    overlay.classList.remove("show");
+
+
+    game.level = 1;
+
+    game.score = 0;
+
+    game.running = true;
+
+    game.paused = false;
+
+    game.won = false;
+
+    game.gameOver = false;
+
+
+    initializeLevel();
+
+    startMusic();
+
+
+    statusDisplay.textContent =
+        "ĐANG CHƠI";
+
+}
+
+
+/* ===============================================================
+   PHẦN 33 - BẮT ĐẦU GAME
+   =============================================================== */
+
+function startGame() {
+
+    initAudio();
+
+    game.level = 1;
+
+    game.score = 0;
+
+    game.running = true;
+
+    game.paused = false;
+
+    game.won = false;
+
+    game.gameOver = false;
+
+
+    initializeLevel();
+
+
+    /*
+        Bật nhạc sau thao tác click
+        để tránh trình duyệt chặn autoplay.
+    */
+
+    startMusic();
+
+
+    statusDisplay.textContent =
+        "ĐANG CHƠI";
+
+}
+
+
+/* ===============================================================
+   PHẦN 34 - CẬP NHẬT HUD
+   =============================================================== */
+
+function updateHUD() {
+
+    levelDisplay.textContent =
+        game.level;
+
+    scoreDisplay.textContent =
+        game.score;
+
+    timeDisplay.textContent =
+        Math.max(
+            0,
+            Math.ceil(game.timeLeft)
+        );
+
+    highScoreDisplay.textContent =
+        game.highScore;
+
+
+    if (
+        game.player &&
+        game.player.boosted
+    ) {
+
+        statusDisplay.textContent =
+            "⚡ TĂNG TỐC";
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 35 - VẼ MÊ CUNG
+   =============================================================== */
+
+function drawMaze() {
+
+    const size =
+        game.cellSize;
+
+
+    /*
+        Vẽ nền.
+    */
+
+    ctx.fillStyle =
+        game.theme.background;
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    /*
+        Vẽ khu vực mê cung.
+    */
+
+    const mazeWidth =
+        game.mazeCols * size;
+
+    const mazeHeight =
+        game.mazeRows * size;
+
+
+    ctx.fillStyle =
+        game.theme.floor;
+
+    ctx.fillRect(
+        game.offsetX,
+        game.offsetY,
+        mazeWidth,
+        mazeHeight
+    );
+
+
+    /*
+        Vẽ từng bức tường.
+    */
+
+    ctx.strokeStyle =
+        game.theme.wall;
+
+    ctx.lineWidth =
+        Math.max(
+            2,
+            size * .10
+        );
+
+    ctx.lineCap =
+        "round";
+
+
+    ctx.shadowColor =
+        game.theme.wallGlow;
+
+    ctx.shadowBlur =
+        Math.min(
+            10,
+            size * .4
+        );
+
+
+    for (
+        let row = 0;
+        row < game.mazeRows;
+        row++
+    ) {
+
+        for (
+            let col = 0;
+            col < game.mazeCols;
+            col++
+        ) {
+
+            const cell =
+                game.maze[row][col];
+
+
+            const x =
+                game.offsetX +
+                col * size;
+
+            const y =
+                game.offsetY +
+                row * size;
+
+
+            ctx.beginPath();
+
+
+            /*
+                Trên.
+            */
+
+            if (cell.walls[0]) {
+
+                ctx.moveTo(
+                    x,
+                    y
+                );
+
+                ctx.lineTo(
+                    x + size,
+                    y
+                );
+
+            }
+
+
+            /*
+                Phải.
+            */
+
+            if (cell.walls[1]) {
+
+                ctx.moveTo(
+                    x + size,
+                    y
+                );
+
+                ctx.lineTo(
+                    x + size,
+                    y + size
+                );
+
+            }
+
+
+            /*
+                Dưới.
+            */
+
+            if (cell.walls[2]) {
+
+                ctx.moveTo(
+                    x + size,
+                    y + size
+                );
+
+                ctx.lineTo(
+                    x,
+                    y + size
+                );
+
+            }
+
+
+            /*
+                Trái.
+            */
+
+            if (cell.walls[3]) {
+
+                ctx.moveTo(
+                    x,
+                    y + size
+                );
+
+                ctx.lineTo(
+                    x,
+                    y
+                );
+
+            }
+
+
+            ctx.stroke();
+
+        }
+
+    }
+
+
+    ctx.shadowBlur = 0;
+
+}
+
+
+/* ===============================================================
+   PHẦN 36 - VẼ ĐIỂM ĐÍCH
+   =============================================================== */
+
+function drawExit() {
+
+    const size =
+        game.cellSize;
+
+
+    const x =
+        game.offsetX +
+        (game.mazeCols - .5) *
+        size;
+
+    const y =
+        game.offsetY +
+        (game.mazeRows - .5) *
+        size;
+
+
+    /*
+        Hiệu ứng nhấp nháy.
+    */
+
+    const pulse =
+        1 +
+        Math.sin(
+            performance.now() / 200
+        ) * .1;
+
+
+    ctx.save();
+
+
+    ctx.translate(x, y);
+
+    ctx.scale(
+        pulse,
+        pulse
+    );
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        0,
+        size * .3,
+        0,
+        Math.PI * 2
+    );
+
+
+    ctx.fillStyle =
+        game.theme.exit;
+
+    ctx.shadowColor =
+        game.theme.exit;
+
+    ctx.shadowBlur = 20;
+
+    ctx.fill();
+
+
+    ctx.restore();
+
+}
+
+
+/* ===============================================================
+   PHẦN 37 - VẼ COIN
+   =============================================================== */
+
+function drawCoins() {
+
+    const size =
+        game.cellSize;
+
+
+    for (const coin of game.coins) {
+
+        if (coin.collected) {
+            continue;
+        }
+
+
+        const x =
+            game.offsetX +
+            (coin.col + .5) *
+            size;
+
+        const y =
+            game.offsetY +
+            (coin.row + .5) *
+            size;
+
+
+        const pulse =
+            1 +
+            Math.sin(
+                performance.now() / 150 +
+                coin.col
+            ) * .08;
+
+
+        ctx.save();
+
+        ctx.translate(x, y);
+
+        ctx.scale(
+            pulse,
+            pulse
+        );
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            0,
+            size * .18,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            "#ffd700";
+
+        ctx.shadowColor =
+            "#ffd700";
+
+        ctx.shadowBlur = 10;
+
+        ctx.fill();
+
+
+        ctx.restore();
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 38 - VẼ VẬT PHẨM TĂNG TỐC
+   =============================================================== */
+
+function drawPowerUp() {
+
+    if (
+        !game.powerUp ||
+        !game.powerUp.active
+    ) {
+        return;
+    }
+
+
+    const size =
+        game.cellSize;
+
+
+    const x =
+        game.offsetX +
+        (game.powerUp.col + .5) *
+        size;
+
+    const y =
+        game.offsetY +
+        (game.powerUp.row + .5) *
+        size;
+
+
+    const pulse =
+        1 +
+        Math.sin(
+            performance.now() / 120
+        ) * .12;
+
+
+    ctx.save();
+
+    ctx.translate(x, y);
+
+    ctx.scale(
+        pulse,
+        pulse
+    );
+
+
+    /*
+        Vẽ hình đôi giày đơn giản.
+    */
+
+    ctx.fillStyle =
+        "#ff4081";
+
+    ctx.shadowColor =
+        "#ff4081";
+
+    ctx.shadowBlur = 20;
+
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        -size * .3,
+        -size * .2,
+        size * .55,
+        size * .3,
+        size * .08
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle =
+        "#ffffff";
+
+    ctx.font =
+        `${size * .3}px Arial`;
+
+    ctx.textAlign =
+        "center";
+
+    ctx.textBaseline =
+        "middle";
+
+    ctx.fillText(
+        "⚡",
+        0,
+        0
+    );
+
+
+    ctx.restore();
+
+}
+
+
+/* ===============================================================
+   PHẦN 39 - VẼ ENEMY
+   =============================================================== */
+
+function drawEnemies() {
+
+    const size =
+        game.cellSize;
+
+
+    for (const enemy of game.enemies) {
+
+        const x =
+            game.offsetX +
+            enemy.x * size;
+
+        const y =
+            game.offsetY +
+            enemy.y * size;
+
+
+        ctx.save();
+
+        ctx.translate(x, y);
+
+
+        /*
+            Vòng sáng.
+        */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            0,
+            size * .3,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            "#f44336";
+
+        ctx.shadowColor =
+            "#ff1744";
+
+        ctx.shadowBlur = 15;
+
+        ctx.fill();
+
+
+        /*
+            Mắt.
+        */
+
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle =
+            "#ffffff";
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            -size * .09,
+            -size * .05,
+            size * .06,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.arc(
+            size * .09,
+            -size * .05,
+            size * .06,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+
+        ctx.restore();
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 40 - VẼ NHÂN VẬT
+   =============================================================== */
+
+function drawPlayer() {
+
+    if (!game.player) {
+        return;
+    }
+
+
+    const size =
+        game.cellSize;
+
+
+    const x =
+        game.offsetX +
+        game.player.x *
+        size;
+
+    const y =
+        game.offsetY +
+        game.player.y *
+        size;
+
+
+    ctx.save();
+
+    ctx.translate(x, y);
+
+
+    /*
+        Màu xanh khi bình thường.
+        Màu hồng khi có giày tăng tốc.
+    */
+
+    const color =
+        game.player.boosted
+            ? "#ff1493"
+            : "#00ff66";
+
+
+    /*
+        Vòng sáng.
+    */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        0,
+        size * .38,
+        0,
+        Math.PI * 2
+    );
+
+
+    ctx.fillStyle =
+        color;
+
+    ctx.shadowColor =
+        color;
+
+    ctx.shadowBlur = 18;
+
+    ctx.fill();
+
+
+    /*
+        Mặt nhân vật.
+    */
+
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle =
+        "#ffffff";
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        -size * .09,
+        -size * .06,
+        size * .05,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.arc(
+        size * .09,
+        -size * .06,
+        size * .05,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /*
+        Nếu đang tăng tốc,
+        thêm tia chớp.
+    */
+
+    if (game.player.boosted) {
+
+        ctx.fillStyle =
+            "#fff176";
+
+        ctx.font =
+            `${size * .4}px Arial`;
+
+        ctx.textAlign =
+            "center";
+
+        ctx.textBaseline =
+            "middle";
+
+        ctx.fillText(
+            "⚡",
+            0,
+            size * .48
+        );
+
+    }
+
+
+    ctx.restore();
+
+}
+
+
+/* ===============================================================
+   PHẦN 41 - VẼ TOÀN BỘ GAME
+   =============================================================== */
+
+function drawGame() {
+
+    drawMaze();
+
+    drawExit();
+
+    drawCoins();
+
+    drawPowerUp();
+
+    drawEnemies();
+
+    drawPlayer();
+
+
+    /*
+        Hiển thị Pause trực tiếp trên canvas.
+    */
+
+    if (game.paused) {
+
+        ctx.fillStyle =
+            "rgba(0,0,0,.6)";
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        ctx.fillStyle =
+            "#ffffff";
+
+        ctx.font =
+            "bold 50px Arial";
+
+        ctx.textAlign =
+            "center";
+
+        ctx.textBaseline =
+            "middle";
+
+        ctx.fillText(
+            "⏸ TẠM DỪNG",
+            canvas.width / 2,
+            canvas.height / 2
+        );
+
+    }
+
+}
+
+
+/* ===============================================================
+   PHẦN 42 - GAME LOOP
+   =============================================================== */
+
+function gameLoop(timestamp) {
+
+    /*
+        Delta time giúp game chạy ổn định
+        trên các máy có FPS khác nhau.
+    */
+
+    if (!game.lastTime) {
+
+        game.lastTime =
+            timestamp;
+
+    }
+
+
+    let deltaTime =
+        (timestamp - game.lastTime) /
+        1000;
+
+
+    /*
+        Không cho delta quá lớn
+        nếu tab bị treo hoặc chuyển tab.
+    */
+
+    deltaTime =
+        Math.min(
+            deltaTime,
+            .05
+        );
+
+
+    game.lastTime =
+        timestamp;
+
+
+    /*
+        Cập nhật game.
+    */
+
+    updatePlayer(deltaTime);
+
+    updateEnemies(deltaTime);
+
+    checkCoins();
+
+    checkPowerUp();
+
+    checkExit();
+
+    updateTimer(deltaTime);
+
+
+    /*
+        Vẽ game.
+    */
+
+    drawGame();
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+
+/* ===============================================================
+   PHẦN 43 - CÁC NÚT ĐIỀU KHIỂN
+   =============================================================== */
+
+
+/*
+    Nút bắt đầu.
+*/
+
+startButton.addEventListener(
+    "click",
+    () => {
+
+        startGame();
+
+    }
+);
+
+
+/*
+    Nút Pause.
+*/
+
+pauseButton.addEventListener(
+    "click",
+    () => {
+
+        togglePause();
+
+    }
+);
+
+
+/*
+    Nút chơi lại.
+*/
+
+restartButton.addEventListener(
+    "click",
+    () => {
+
+        restartGame();
+
+    }
+);
+
+
+/*
+    Nút trên màn hình thông báo.
+*/
+
+overlayButton.addEventListener(
+    "click",
+    () => {
+
+        if (game.gameOver) {
+
+            restartGame();
+
+        } else {
+
+            nextLevel();
+
+        }
+
+    }
+);
+
+
+/* ===============================================================
+   PHẦN 44 - ĐIỀU KHIỂN MOBILE
+   =============================================================== */
+
+document
+    .querySelectorAll(".directionButton")
+    .forEach(button => {
+
+        const key =
+            button.dataset.key;
+
+
+        /*
+            Khi chạm.
+        */
+
+        button.addEventListener(
+            "pointerdown",
+            event => {
+
+                event.preventDefault();
+
+                keys[key] = true;
+
+            }
+        );
+
+
+        /*
+            Khi nhả.
+        */
+
+        button.addEventListener(
+            "pointerup",
+            event => {
+
+                event.preventDefault();
+
+                keys[key] = false;
+
+            }
+        );
+
+
+        button.addEventListener(
+            "pointercancel",
+            () => {
+
+                keys[key] = false;
+
+            }
+        );
+
+
+        button.addEventListener(
+            "pointerleave",
+            () => {
+
+                keys[key] = false;
+
+            }
+        );
+
+    });
+
+
+/* ===============================================================
+   PHẦN 45 - KHỞI ĐỘNG BAN ĐẦU
+   =============================================================== */
+
+
+/*
+    Khởi tạo level đầu tiên để hiển thị
+    trước khi người chơi bấm Bắt đầu.
+*/
+
+initializeLevel();
+
+updateHUD();
+
+
+/*
+    Game loop chạy liên tục,
+    nhưng game chưa chạy cho đến khi
+    người chơi bấm BẮT ĐẦU.
+*/
+
+requestAnimationFrame(
+    gameLoop
+);
+
+</script>
+
+</body>
+</html>
